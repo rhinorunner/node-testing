@@ -4,6 +4,7 @@
 #include <SDL.h>
 #undef main
 #include "render.hpp"
+#include "implementations.hpp"
 
 int main()
 {
@@ -31,13 +32,46 @@ int main()
 	clock_t timeOld = clock();
 	clock_t timeNew = clock();
 	float deltaTime = 0;
+	BetterRand rand {};
 
 	N_RENDER Renderer {N_WINDOW, N_RENDERER};
 
+	for (uint16_t i = 0; i < 10; ++i) {
+		Node temp {
+			(rand.genRand() % N_SCREENWIDTH),
+			(rand.genRand() % N_SCREENHEIGHT),
+			i,
+			false,
+			{
+				(uint8_t)(rand.genRand() % 70)+160,
+				(uint8_t)(rand.genRand() % 70)+160,
+				(uint8_t)(rand.genRand() % 70)
+			},
+			(rand.genRand() % 5)+5
+		};
+		N_NODES.push_back(temp);
+	}
+
+	// holds the node connection arrays, in order of connections
+	static std::vector<std::vector<uint16_t>> nodeConnections {};
+
+	nodeConnections.push_back(IMP_shortestPath(N_NODES));
+	
+	for (auto i : nodeConnections) {
+		for (auto j : i) {
+			std::cout << j << " ";
+		}
+		std::cout << std::endl;
+	}
+
 	while (looping)
 	{
+		// UPDATE VARS
+		
 		timeNew = clock();
 		deltaTime = timeNew - timeOld;
+
+		// USER INPUT
 
 		SDL_PollEvent(&event);
 
@@ -57,12 +91,28 @@ int main()
 			}
 		}
 
-		Renderer.blitLine({100,100},{150,150},Colors::white);
-		Renderer.blitCircle(300,300,30,Colors::green);
-		SDL_SetRenderDrawColor(N_RENDERER, 255,255,0, 255);
-		Renderer.DrawCircle(N_RENDERER,200,200,30);
+		// DRAW THINGS
+		
+		for (auto i : N_NODES) {
+			Renderer.blitCircle(
+				i.X,
+				i.Y,i.radius,
+				{i.color.R, i.color.G, i.color.B}
+			);
+		}
+		// render lines connecting the nodes
+		for (uint16_t j = 0; j < nodeConnections[0].size(); ++j) {
+			// make sure the node isnt the last element
+			if (j == (nodeConnections[0].size() - 1)) break;
+			Renderer.blitLine(
+				{N_NODES[nodeConnections[0][j    ]].X, N_NODES[nodeConnections[0][j    ]].Y},
+				{N_NODES[nodeConnections[0][j + 1]].X, N_NODES[nodeConnections[0][j + 1]].Y},
+				{255,255,255}
+			);
+		}
 
-		// render stuff:
+		// FINISH RENDER
+	
 		SDL_RenderPresent(N_RENDERER);
 		// clear screen
 		SDL_SetRenderDrawColor(N_RENDERER, N_BACKCOLOR.R, N_BACKCOLOR.G, N_BACKCOLOR.B, 255);
