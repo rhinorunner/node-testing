@@ -39,11 +39,17 @@ static constexpr uint16_t N_SCREENWIDTH = 1000;
 // screen height
 static constexpr uint16_t N_SCREENHEIGHT = 1000;
 
+// amount of nodes
+static constexpr uint16_t N_NODEAMOUNT = 100;
+
 // background color
 static const RGB_t N_BACKCOLOR = {0,0,0};
 
 // stores all nodes
 static std::vector<Node> N_NODES {};
+
+// holds the node connection arrays, in order of connections
+static std::vector<std::vector<uint16_t>> nodeConnections {};
 
 /*********************************************/
 
@@ -165,6 +171,14 @@ namespace Colors
 	RGB_t yellow = {255,255,0  };
 	RGB_t purple = {255,0  ,255};
 	RGB_t cyan   = {0  ,255,255};
+
+	std::array<RGB_t,8> allColors = {
+		white,black,red,green,blue,yellow,purple,cyan
+	};
+
+	std::array<RGB_t,8> list = {
+		white,black,red,green,blue,yellow,purple,cyan
+	};
 };
 
 class BetterRand {

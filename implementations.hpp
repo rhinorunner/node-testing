@@ -25,6 +25,7 @@ std::vector<uint16_t> IMP_shortestPath(std::vector<Node> nodes)
 
 		uint16_t closestNode;
 		uint16_t closestNodeDistance = UINT16_MAX;
+		
 		for (uint16_t i = 0; i < nodes.size(); ++i) 
 		{
 			// check if the node is comparing something it shouldnt be
@@ -38,10 +39,36 @@ std::vector<uint16_t> IMP_shortestPath(std::vector<Node> nodes)
 			}
 		}
 		// found the right node! use it. 
-		toReturn.push_back(closestNodeDistance);
+		toReturn.push_back(closestNode);
 		nextNode = nodes[closestNode];
 		nodes[closestNode].check = true;
 	}
+}
+
+// returns the index of a node with a specific ID
+uint16_t findId(const uint16_t& id) {
+	for (uint16_t i = 0; i < N_NODES.size(); ++i) {
+		if (N_NODES[i].id == id) 
+			return i;
+	}
+	// shit, its not in the node list
+	// what now
+}
+
+// finds the total distance of a node path
+float nodeDistanceTotal(std::vector<uint16_t> path) 
+{
+	float totalDistance = 0;
+	for (uint16_t i = 0; i < path.size(); ++i) 
+	{
+		// make sure its not the last node
+		if (i == path.size()-1) break;
+		totalDistance += distance(
+			{N_NODES[findId(path[i  ])].X, N_NODES[findId(path[i  ])].Y},
+			{N_NODES[findId(path[i+1])].X, N_NODES[findId(path[i+1])].Y}
+		);
+	}
+	return totalDistance;
 }
 
 #endif
