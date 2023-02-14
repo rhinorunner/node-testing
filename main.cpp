@@ -64,7 +64,7 @@ int main()
 				if (N_NODEAMOUNT + N_NODESTEP > UINT16_MAX) {
 					N_NODEAMOUNT = UINT16_MAX;
 				}
-				N_NODEAMOUNT += N_NODESTEP;
+				else N_NODEAMOUNT += N_NODESTEP;
 				resetNodes(rand);
 				calcNodes();
 				doneDrawing = false;
@@ -76,7 +76,26 @@ int main()
 				if (N_NODEAMOUNT - N_NODESTEP < 1) {
 					N_NODEAMOUNT = 2;
 				}
-				N_NODEAMOUNT -= N_NODESTEP;
+				else N_NODEAMOUNT -= N_NODESTEP;
+				resetNodes(rand);
+				calcNodes();
+				doneDrawing = false;
+				break;
+			
+			// increase line delay
+			// reset nodes
+			case SDLK_KP_9:
+				N_NODEDELAY += N_NODEDELAYSTEP;
+				resetNodes(rand);
+				calcNodes();
+				doneDrawing = false;
+				break;
+			
+			// decrease line delay
+			// reset nodes
+			case SDLK_KP_6:
+				if (N_NODEDELAY - N_NODEDELAYSTEP < 0) N_NODEDELAY = 0;
+				else N_NODEDELAY -= N_NODEDELAYSTEP;
 				resetNodes(rand);
 				calcNodes();
 				doneDrawing = false;

@@ -42,9 +42,11 @@ static constexpr uint16_t N_SCREENHEIGHT = 1000;
 // amount of nodes
 static uint16_t N_NODEAMOUNT = 2;
 // how much to increase/decrease nodes by
-static constexpr uint16_t N_NODESTEP = 10;
+static constexpr uint16_t N_NODESTEP = 100;
 // node line delay, in ms
-static constexpr uint16_t N_NODEDELAY = 10;
+static uint16_t N_NODEDELAY = 10;
+// node delay increase/decrease step
+static uint16_t N_NODEDELAYSTEP = 2;
 
 // background color
 static const RGB_t N_BACKCOLOR = {0,0,0};
