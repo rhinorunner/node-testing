@@ -53,9 +53,11 @@ void calcNodes()
 		IMP_shortestPath(N_NODES)
 	};
 	
+	std::cout << "\n[" << N_NODES.size() << " nodes]\n";
 	for (uint16_t im = 0; im < nodeConnections.size(); ++im) {
 		std::cout << "Path " << im << ": " << nodeDistanceTotal(nodeConnections[im]) << '\n';
 	}
+	std::cout << '\n';
 }
 
 #endif

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <vector>
+#include <windows.h>
 #include <SDL.h>
 #undef main
 #include "render.hpp"
@@ -20,6 +21,7 @@ int main()
 	clock_t timeNew = clock();
 	float deltaTime = 0;
 	BetterRand rand {};
+	bool doneDrawing = false;
 
 	N_RENDER Renderer {N_WINDOW, N_RENDERER};
 
@@ -44,13 +46,40 @@ int main()
 		{
 			switch (event.key.keysym.sym)
 			{
+			// quit
 			case SDLK_ESCAPE:
 				looping = false;
 				break;
 			
+			// reset nodes
 			case SDLK_KP_ENTER:
 				resetNodes(rand);
 				calcNodes();
+				doneDrawing = false;
+				break;
+			
+			// increase node amount
+			// also reset nodes
+			case SDLK_KP_PLUS:
+				if (N_NODEAMOUNT + N_NODESTEP > UINT16_MAX) {
+					N_NODEAMOUNT = UINT16_MAX;
+				}
+				N_NODEAMOUNT += N_NODESTEP;
+				resetNodes(rand);
+				calcNodes();
+				doneDrawing = false;
+				break;
+			
+			// decrease node amount
+			// also reset nodes
+			case SDLK_KP_MINUS:
+				if (N_NODEAMOUNT - N_NODESTEP < 1) {
+					N_NODEAMOUNT = 2;
+				}
+				N_NODEAMOUNT -= N_NODESTEP;
+				resetNodes(rand);
+				calcNodes();
+				doneDrawing = false;
 				break;
 			}
 		}
@@ -75,17 +104,23 @@ int main()
 
 				uint16_t nodeIndex = findId(nodeConnections[0][j]);
 
-				Node temp1 = N_NODES[findId(nodeConnections[0][j])];
+				Node temp1 = N_NODES[findId(nodeConnections[0][j  ])];
 				Node temp2 = N_NODES[findId(nodeConnections[0][j+1])];
 
 				Renderer.blitLine(
 					{temp1.X, temp1.Y},
 					{temp2.X, temp2.Y},
-					Colors::list[tempC]
+					Colors::list[tempC],
+					1
 				);
+				if (N_NODEDELAY && !doneDrawing) {
+					Sleep(N_NODEDELAY);
+					SDL_RenderPresent(N_RENDERER);
+				}
 			}
 			tempC++;
 		}
+		doneDrawing = true;
 		
 		SDL_RenderPresent(N_RENDERER);
 		// clear screen

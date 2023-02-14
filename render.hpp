@@ -40,7 +40,11 @@ static constexpr uint16_t N_SCREENWIDTH = 1000;
 static constexpr uint16_t N_SCREENHEIGHT = 1000;
 
 // amount of nodes
-static constexpr uint16_t N_NODEAMOUNT = 100;
+static uint16_t N_NODEAMOUNT = 2;
+// how much to increase/decrease nodes by
+static constexpr uint16_t N_NODESTEP = 10;
+// node line delay, in ms
+static constexpr uint16_t N_NODEDELAY = 10;
 
 // background color
 static const RGB_t N_BACKCOLOR = {0,0,0};
@@ -86,7 +90,8 @@ public:
 	void blitLine(
 		const std::pair<uint16_t, uint16_t>& coords1,
 		const std::pair<uint16_t, uint16_t>& coords2,
-		const RGB_t& color
+		const RGB_t& color,
+		uint16_t thickness = 1
 	) {
 		SDL_SetRenderDrawColor(
 			Renderer,
@@ -95,13 +100,15 @@ public:
 			color.B,
 			255
 		);
-		SDL_RenderDrawLine(
-			Renderer,
-			coords1.first,
-			coords1.second,
-			coords2.first,
-			coords2.second
-		);
+		for (uint16_t i = 0; i < thickness;++i) {
+			SDL_RenderDrawLine(
+				Renderer,
+				coords1.first+i,
+				coords1.second+i,
+				coords2.first+i,
+				coords2.second+i
+			);
+		}
 	}
 
 	// blit a circle (no fill)
