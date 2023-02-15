@@ -121,14 +121,14 @@ int main()
 				// make sure the node isnt the last element
 				if (j == (nodeConnections[B].size() - 1)) break;
 
-				uint16_t nodeIndex = findId(nodeConnections[0][j]);
+				uint16_t nodeIndex = findId(nodeConnections[B][j]);
 
-				Node temp1 = N_NODES[findId(nodeConnections[0][j  ])];
-				Node temp2 = N_NODES[findId(nodeConnections[0][j+1])];
+				Node temp1 = N_NODES[findId(nodeConnections[B][j  ])];
+				Node temp2 = N_NODES[findId(nodeConnections[B][j+1])];
 
 				Renderer.blitLine(
-					{temp1.X, temp1.Y},
-					{temp2.X, temp2.Y},
+					{temp1.X+B, temp1.Y+B},
+					{temp2.X+B, temp2.Y+B},
 					Colors::list[tempC],
 					1
 				);

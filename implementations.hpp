@@ -6,7 +6,10 @@
 #include "render.hpp"
 
 // connects each node with the closest node
-std::vector<uint16_t> IMP_shortestPath(std::vector<Node> nodes) 
+std::vector<uint16_t> IMP_shortestPath(
+	std::vector<Node> nodes,
+	const uint16_t& variation = 0
+) 
 {
 	std::vector<uint16_t> toReturn {};
 	// holds the next node to connect to
@@ -33,9 +36,17 @@ std::vector<uint16_t> IMP_shortestPath(std::vector<Node> nodes)
 				
 			// check if the node is closer than the next node
 			float dist = distance({nextNode.X, nextNode.Y},{nodes[i].X, nodes[i].Y});
-			if (dist < closestNodeDistance) {
-				closestNode = nodes[i].id;
-				closestNodeDistance = dist;
+			if (variation) {
+				if (dist+(rand()%variation) < closestNodeDistance+(rand()%variation)) {
+					closestNode = nodes[i].id;
+					closestNodeDistance = dist;
+				}
+			}
+			else {
+				if (dist < closestNodeDistance) {
+					closestNode = nodes[i].id;
+					closestNodeDistance = dist;
+				}
 			}
 		}
 		// found the right node! use it. 

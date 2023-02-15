@@ -50,12 +50,33 @@ void resetNodes(BetterRand& rand)
 void calcNodes() 
 {
 	nodeConnections = {
-		IMP_shortestPath(N_NODES)
+		IMP_shortestPath(N_NODES),
+		IMP_shortestPath(N_NODES,2),
+		IMP_shortestPath(N_NODES,3),
+		IMP_shortestPath(N_NODES,4),
+		IMP_shortestPath(N_NODES,5),
+		IMP_shortestPath(N_NODES,6)
 	};
+
+	// find the shortest node path
+	float shortestPath = UINT16_MAX;
+	uint16_t shortestPathName = 0;
+	
+	for (uint16_t ll = 0; ll < nodeConnections.size(); ++ll) {
+		if (nodeDistanceTotal(nodeConnections[ll]) < shortestPath) {
+			shortestPath = nodeDistanceTotal(nodeConnections[ll]);
+			shortestPathName = ll;
+		}
+	}
 	
 	std::cout << "\n[" << N_NODES.size() << " nodes]\n";
 	for (uint16_t im = 0; im < nodeConnections.size(); ++im) {
-		std::cout << "Path " << im << ": " << nodeDistanceTotal(nodeConnections[im]) << '\n';
+		std::cout 
+			<< "Path " 
+			<< im << ": " 
+			<< nodeDistanceTotal(nodeConnections[im])
+			<< (im == shortestPathName ? " <---" : "")
+			<< '\n';
 	}
 	std::cout << '\n';
 }

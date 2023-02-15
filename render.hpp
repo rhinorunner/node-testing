@@ -40,11 +40,11 @@ static constexpr uint16_t N_SCREENWIDTH = 1000;
 static constexpr uint16_t N_SCREENHEIGHT = 1000;
 
 // amount of nodes
-static uint16_t N_NODEAMOUNT = 2;
+static uint16_t N_NODEAMOUNT = 200;
 // how much to increase/decrease nodes by
 static constexpr uint16_t N_NODESTEP = 100;
 // node line delay, in ms
-static uint16_t N_NODEDELAY = 10;
+static uint16_t N_NODEDELAY = 2;
 // node delay increase/decrease step
 static uint16_t N_NODEDELAYSTEP = 2;
 
@@ -186,7 +186,7 @@ namespace Colors
 	};
 
 	std::array<RGB_t,8> list = {
-		white,black,red,green,blue,yellow,purple,cyan
+		white,red,green,blue,yellow,purple,cyan
 	};
 };
 
