@@ -37,12 +37,26 @@ int main()
 		SDL_PollEvent(&event);
 
 		if (event.type == SDL_QUIT) looping = false;
-		if (event.type == SDL_MOUSEMOTION) {
+		else if (event.type == SDL_MOUSEMOTION) {
 		SDL_MOUSEMOTION:
 			mouseX = event.motion.x;
 			mouseY = event.motion.y;
 		}
-		if (event.type == SDL_KEYDOWN)
+		else if (event.type == SDL_MOUSEBUTTONDOWN) {
+			// add a node at that location
+			Node temp {
+				mouseX,
+				mouseY,
+				N_NODES.size(),
+				false,
+				{155,155,155},
+				5
+			};
+			N_NODES.push_back(temp);
+			N_NODEAMOUNT++;
+			calcNodes();
+		}
+		else if (event.type == SDL_KEYDOWN)
 		{
 			switch (event.key.keysym.sym)
 			{
@@ -54,6 +68,13 @@ int main()
 			// reset nodes
 			case SDLK_KP_ENTER:
 				resetNodes(rand);
+				calcNodes();
+				doneDrawing = false;
+				break;
+
+			// calc nodes no reset
+			// reset nodes
+			case SDLK_KP_PERIOD:
 				calcNodes();
 				doneDrawing = false;
 				break;
@@ -99,6 +120,14 @@ int main()
 				resetNodes(rand);
 				calcNodes();
 				doneDrawing = false;
+				break;
+
+			// clear all nodes
+			case SDLK_KP_0:
+				N_NODES = {};
+				N_NODEAMOUNT = 0;
+				resetNodes(rand);
+				calcNodes();
 				break;
 			}
 		}

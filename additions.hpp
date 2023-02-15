@@ -37,11 +37,12 @@ void resetNodes(BetterRand& rand)
 			i,
 			false,
 			{
-				(uint8_t)(rand.genRand() % 70)+160,
-				(uint8_t)(rand.genRand() % 70)+160,
-				(uint8_t)(rand.genRand() % 70)
+				155,155,155
+				//(uint8_t)(rand.genRand() % 70),
+				//(uint8_t)(rand.genRand() % 70),
+				//(uint8_t)(rand.genRand() % 70)
 			},
-			(rand.genRand() % 5)+5
+			5
 		};
 		N_NODES.push_back(temp);
 	}
@@ -53,9 +54,10 @@ void calcNodes()
 		IMP_shortestPath(N_NODES),
 		IMP_shortestPath(N_NODES,2),
 		IMP_shortestPath(N_NODES,3),
-		IMP_shortestPath(N_NODES,4),
-		IMP_shortestPath(N_NODES,5),
-		IMP_shortestPath(N_NODES,6)
+		IMP_shortestPath(N_NODES,8),
+		IMP_shortestPath(N_NODES,20),
+		IMP_shortestPath(N_NODES,50),
+		
 	};
 
 	// find the shortest node path

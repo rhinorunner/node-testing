@@ -35,14 +35,14 @@ struct Node {
 /*********************************************/
 
 // screen width
-static constexpr uint16_t N_SCREENWIDTH = 1000;
+static constexpr uint16_t N_SCREENWIDTH = 900;
 // screen height
-static constexpr uint16_t N_SCREENHEIGHT = 1000;
+static constexpr uint16_t N_SCREENHEIGHT = 900;
 
 // amount of nodes
-static uint16_t N_NODEAMOUNT = 200;
+static uint16_t N_NODEAMOUNT = 100;
 // how much to increase/decrease nodes by
-static constexpr uint16_t N_NODESTEP = 100;
+static constexpr uint16_t N_NODESTEP = 10;
 // node line delay, in ms
 static uint16_t N_NODEDELAY = 2;
 // node delay increase/decrease step

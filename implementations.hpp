@@ -9,9 +9,9 @@
 std::vector<uint16_t> IMP_shortestPath(
 	std::vector<Node> nodes,
 	const uint16_t& variation = 0
-) 
-{
+) {
 	std::vector<uint16_t> toReturn {};
+	if (N_NODEAMOUNT <= 1) return toReturn;
 	// holds the next node to connect to
 	Node nextNode = nodes[0];
 	
