@@ -127,11 +127,14 @@ int main()
 			}
 		}
 		
-		auto thing = closestNodes(N_NODES,N_NODES[0],3);
+		N_NODES[0].color = {0,255,0};
+
+		auto thing = closestNodes(N_NODES,N_NODES[0],10);
 		for (uint16_t l = 0; l < thing.size(); ++l) {
 			uint16_t index = findId(thing[l].id);
 			N_NODES[index].color = {255,0,0};
-			std::cout << "index: " << index << '\n';
+			float dist = distance({N_NODES[0].X,N_NODES[0].Y},{N_NODES[index].X,N_NODES[index].Y});
+			std::cout << "index: " << index << ", dist: " << dist << '\n';
 		}
 
 		for (auto i : N_NODES) {
