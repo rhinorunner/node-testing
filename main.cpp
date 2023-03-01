@@ -24,7 +24,7 @@ int main()
 	N_RENDER Renderer {N_WINDOW, N_RENDERER};
 
 	resetNodes(rand);
-	calcNodes();
+	//calcNodes();
 
 	while (looping)
 	{
@@ -32,7 +32,6 @@ int main()
 		deltaTime = timeNew - timeOld;
 
 		SDL_PollEvent(&event);
-
 		if (event.type == SDL_QUIT) looping = false;
 		else if (event.type == SDL_MOUSEMOTION) {
 			mouseX = event.motion.x;
@@ -128,6 +127,13 @@ int main()
 			}
 		}
 		
+		auto thing = closestNodes(N_NODES,N_NODES[0],3);
+		for (uint16_t l = 0; l < thing.size(); ++l) {
+			uint16_t index = findId(thing[l].id);
+			N_NODES[index].color = {255,0,0};
+			std::cout << "index: " << index << '\n';
+		}
+
 		for (auto i : N_NODES) {
 			Renderer.blitCircle(
 				i.X,
@@ -135,6 +141,8 @@ int main()
 				{i.color.R, i.color.G, i.color.B}
 			);
 		}
+		SDL_RenderPresent(N_RENDERER);
+		while (1);
 		
 		// render lines connecting the nodes
 		uint16_t tempC = 0;
