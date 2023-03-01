@@ -68,10 +68,24 @@ std::vector<Node> closestNodes(
 	// closest nodes
 	// fill it with the first [nodeAmount] nodes just so the logic works
 	std::vector<std::pair<Node,float>> closestNodes {};
+	bool still = false;
 	for (uint16_t m = 0; m < nodeAmount; ++m) {
+		if (nodes[m].id == genesisNode.id) {
+			still = true;
+			continue;
+		}
 		closestNodes.push_back({
 			nodes[m],
 			distance({genesisNode.X,genesisNode.Y},{nodes[m].X,nodes[m].Y})
+		});
+	}
+	if (still) {
+		closestNodes.push_back({
+			nodes[nodeAmount],
+			distance(
+				{genesisNode.X,genesisNode.Y},
+				{nodes[nodeAmount].X,nodes[nodeAmount].Y}
+			)
 		});
 	}
 	if (N_NODEAMOUNT <= 1) return toReturn;
@@ -84,22 +98,27 @@ std::vector<Node> closestNodes(
 		
 		// distance from genesis node to current node
 		double dist = distance({genesisNode.X,genesisNode.Y},{i.X,i.Y});
+		std::cout << "node " << i.id << ", dist " << dist << '\n';
 		// check if the node is shorter than everything in toReturn
 		for (auto& n : closestNodes) {
-			if (dist > n.second) {
-				// replace the smallest node in closestNodes with the new node
-				uint16_t smallestInd;
-				uint16_t smallestVal = UINT16_MAX;
+			if (dist < n.second) {
+				std::cout << "\tsuccess! smaller than " << n.second << '\n';
+				// replace the largest node in closestNodes with the new node
+				uint16_t largestInd = 0;
+				uint16_t largestVal = 0;
 				for (uint16_t m = 0; m < closestNodes.size(); ++m) {
-					if (closestNodes[m].second < smallestVal) {
-						smallestVal = closestNodes[m].second;
-						smallestInd = m;
+					if (closestNodes[m].second > largestVal) {
+						largestVal = closestNodes[m].second;
+						largestInd = m;
 					}
 				}
-				closestNodes[smallestInd] = {i,dist};
+				std::cout << "\tlargest path was " << largestVal << '\n';
+				closestNodes[largestInd] = {i,dist};
+				break;
 			}
 		}
 	}
+	for (auto& b : closestNodes) toReturn.push_back(b.first);
 	return toReturn;
 }
 
