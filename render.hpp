@@ -1,142 +1,228 @@
-#ifndef IMPLEMENTATIONS_HPP_CHECK
-#define IMPLEMENTATIONS_HPP_CHECK
+#ifndef RENDER_HPP_CHECK
+#define RENDER_HPP_CHECK
 
 #include <iostream>
 #include <vector>
-#include "render.hpp"
+#include <array>
+#include <cmath>
+#include <SDL.h>
+#undef main
 
-// connects each node with the closest node
-std::vector<uint16_t> IMP_shortestPath(
-	std::vector<Node> nodes,
-	const uint16_t& variation = 0
+#pragma pack(1)
+
+struct RGB_t {
+	uint8_t R;
+	uint8_t G;
+	uint8_t B;
+};
+
+struct RGBI_t {
+	uint8_t R;
+	uint8_t G;
+	uint8_t B;
+	uint8_t I;
+};
+
+struct Node {
+	uint16_t X;
+	uint16_t Y;
+	uint16_t id;
+	bool check;
+	RGB_t color = {255,255,255};
+	uint16_t radius = 10;
+};
+
+/*********************************************/
+
+// screen width
+static constexpr uint16_t N_SCREENWIDTH = 1400;
+// screen height
+static constexpr uint16_t N_SCREENHEIGHT = 900;
+
+// amount of nodes
+static uint16_t N_NODEAMOUNT = 100;
+// how much to increase/decrease nodes by
+static constexpr uint16_t N_NODESTEP = 10;
+// node line delay, in ms
+static uint16_t N_NODEDELAY = 0;
+// node delay increase/decrease step
+static uint16_t N_NODEDELAYSTEP = 2;
+
+// background color
+static const RGB_t N_BACKCOLOR = {0,0,0};
+
+// stores all nodes
+static std::vector<Node> N_NODES {};
+
+// holds the node connection arrays, in order of connections
+static std::vector<std::vector<uint16_t>> nodeConnections {};
+
+/*********************************************/
+
+double distance(
+	const std::pair<uint16_t,uint16_t>& coords1,
+	const std::pair<uint16_t,uint16_t>& coords2
 ) {
-	std::vector<uint16_t> toReturn {};
-	if (N_NODEAMOUNT <= 1) return toReturn;
-	// holds the next node to connect to
-	Node nextNode = nodes[0];
-	
-	while (1) {
-		bool kill = true;
-		for (uint16_t c = 0; c < nodes.size(); ++c) {
-			// check if all nodes have been checked
-			if (!nodes[c].check) {
-				kill = false;
-				break;
-			}
-		}
-		if (kill) return toReturn;
+	return sqrt(
+		pow(coords1.first  - coords2.first, 2) +
+		pow(coords1.second - coords2.second, 2)
+	);
+}
 
-		uint16_t closestNode;
-		uint16_t closestNodeDistance = UINT16_MAX;
-		
-		for (uint16_t i = 0; i < nodes.size(); ++i) 
-		{
-			// check if the node is comparing something it shouldnt be
-			if ((nodes[i].id == nextNode.id) || nodes[i].check) continue;
-				
-			// check if the node is closer than the next node
-			double dist = distance({nextNode.X, nextNode.Y},{nodes[i].X, nodes[i].Y});
-			if (variation) {
-				if (dist+(rand()%variation) < closestNodeDistance+(rand()%variation)) {
-					closestNode = nodes[i].id;
-					closestNodeDistance = (uint16_t)dist;
-				}
-			}
-			else {
-				if (dist < closestNodeDistance) {
-					closestNode = nodes[i].id;
-					closestNodeDistance = (uint16_t)dist;
-				}
-			}
-		}
-		// found the right node! use it. 
-		toReturn.push_back(closestNode);
-		nextNode = nodes[closestNode];
-		nodes[closestNode].check = true;
+class N_RENDER {
+private:
+	SDL_Window* Window;
+	SDL_Renderer* Renderer;
+
+public:
+	N_RENDER(SDL_Window* window, SDL_Renderer* renderer)
+		: Window(window), Renderer(renderer) {}
+
+	// blit a pixel
+	void blitPixel(
+		const uint16_t& X,
+		const uint16_t& Y, 
+		const RGB_t& color
+	) {
+		SDL_SetRenderDrawColor(Renderer, color.R, color.G, color.B, 255);
+		SDL_RenderDrawPoint(Renderer, X, Y);
 	}
-}
 
-// returns a variable amount of nodes that are closest to the genesis node
-std::vector<Node> closestNodes(
-	const std::vector<Node>& nodes,
-	const Node& genesisNode,
-	const uint16_t& nodeAmount,
-	const std::vector<Node>& illegal = {}
-) {
-	std::vector<Node> toReturn {};
-	if (N_NODEAMOUNT <= 1) return toReturn;
-	std::vector<std::pair<Node,float>> checks {};
-	for (uint16_t e = 0; e < nodeAmount; ++e) {
-		checks.push_back({
-			nodes[e],
-			distance({genesisNode.X,genesisNode.Y},{nodes[e].X,nodes[e].Y})
-		});
-	}
-	for (auto i : nodes) {
-		// dont compare to self or anything in illegal
-		bool stop = false;
-		for (auto& k : illegal) if (k.id == i.id) stop = true;
-		if ((stop == true) || (i.id == genesisNode.id)) continue;
-		float dist = distance({genesisNode.X,genesisNode.Y},{i.X,i.Y});
-		// check if shorter than any path in checks
-		bool yes = false;
-		for (auto& c : checks) {
-			if (dist < c.second) {
-				yes = true;
-				break;
-			}
-		}
-		if (yes) {
-			// get the longest path in the vector and replace it
-			float worstPath = 0;
-			uint16_t index = 0;
-			for (uint16_t a = 0; a < checks.size(); ++a) {
-				if (checks[a].second > worstPath) {
-					worstPath = checks[a].second;
-					index = a;
-				}
-			}
-			checks[index] = {i,dist};
-		}
-	}
-	for (auto& h : checks) toReturn.push_back(h.first);
-	return toReturn;
-}
-
-// iterates through [N1] possible paths with a length of 3
-// then chooses the shortest one and adds it to the main path
-std::vector<uint16_t> IMP_smallIterPath(
-	std::vector<Node> nodes,
-	const uint16_t& N1 = 3
-) {
-	
-}
-
-// returns the index of a node with a specific ID
-uint16_t findId(const uint16_t& id) {
-	for (uint16_t i = 0; i < N_NODES.size(); ++i) 
-		if (N_NODES[i].id == id) 
-			return i;
-	// shit, its not in the node list
-	// what now
-	// pray to god it never gets to this
-	return UINT16_MAX;
-}
-
-// finds the total distance of a node path
-double nodeDistanceTotal(std::vector<uint16_t> path) 
-{
-	double totalDistance = 0;
-	for (uint16_t i = 0; i < path.size(); ++i) 
-	{
-		// make sure its not the last node
-		if (i == path.size()-1) break;
-		totalDistance += distance(
-			{N_NODES[findId(path[i  ])].X, N_NODES[findId(path[i  ])].Y},
-			{N_NODES[findId(path[i+1])].X, N_NODES[findId(path[i+1])].Y}
+	// blit a line from coords1 to coords2
+	void blitLine(
+		const std::pair<uint16_t, uint16_t>& coords1,
+		const std::pair<uint16_t, uint16_t>& coords2,
+		const RGB_t& color,
+		uint16_t thickness = 1
+	) {
+		SDL_SetRenderDrawColor(
+			Renderer,
+			color.R,
+			color.G,
+			color.B,
+			255
 		);
+		for (uint16_t i = 0; i < thickness;++i) {
+			SDL_RenderDrawLine(
+				Renderer,
+				coords1.first+i,
+				coords1.second+i,
+				coords2.first+i,
+				coords2.second+i
+			);
+		}
 	}
-	return totalDistance;
-}
+
+	// blit a circle (no fill)
+	void blitCircle(
+		const uint16_t& centerX, 
+		const uint16_t& centerY, 
+		const uint16_t& radius,
+		const RGB_t& color
+	)
+	{
+		const int32_t diameter = (radius * 2);
+
+		int16_t x = (radius - 1);
+		int16_t y = 0, tx = 1, ty = 1;
+		int16_t error = (tx - diameter);
+
+		SDL_SetRenderDrawColor(Renderer,color.R,color.G,color.B,255);
+
+		while (x >= y)
+		{
+			// each of the following renders an octant of the circle
+			SDL_RenderDrawPoint(Renderer, centerX + x, centerY - y);
+			SDL_RenderDrawPoint(Renderer, centerX + x, centerY + y);
+			SDL_RenderDrawPoint(Renderer, centerX - x, centerY - y);
+			SDL_RenderDrawPoint(Renderer, centerX - x, centerY + y);
+			SDL_RenderDrawPoint(Renderer, centerX + y, centerY - x);
+			SDL_RenderDrawPoint(Renderer, centerX + y, centerY + x);
+			SDL_RenderDrawPoint(Renderer, centerX - y, centerY - x);
+			SDL_RenderDrawPoint(Renderer, centerX - y, centerY + x);
+
+			if (error <= 0)
+			{
+				++y;
+				error += ty;
+				ty += 2;
+			}
+			if (error > 0)
+			{
+				--x;
+				tx += 2;
+				error += (tx - diameter);
+			}
+		}
+	}
+
+	// blit a circle (filled)
+	// kind of shit, dont use this
+	void blitCircleFull(
+		const uint16_t& centerX,
+		const uint16_t& centerY,
+		const uint16_t& radius,
+		const RGB_t& color
+	) {
+		for (uint16_t i = 0; i < radius; i++) {
+			blitCircle(centerX,centerY,i,color);
+		}
+	}
+};
+
+namespace Colors 
+{
+	RGB_t white  = {255,255,255};
+	RGB_t black  = {0  ,0  ,0  };
+	RGB_t red    = {255,0  ,0  };
+	RGB_t green  = {0  ,255,0  };
+	RGB_t blue   = {0  ,0  ,255};
+	RGB_t yellow = {255,255,0  };
+	RGB_t purple = {255,0  ,255};
+	RGB_t cyan   = {0  ,255,255};
+
+	std::array<RGB_t,8> allColors = {
+		white,black,red,green,blue,yellow,purple,cyan
+	};
+
+	std::array<RGB_t,8> list = {
+		white,red,green,blue,yellow,purple,cyan
+	};
+};
+
+class BetterRand {
+public:
+	// adds this to random each time, optional
+	int32_t extraRand;
+	BetterRand(const int32_t &ExtraRand = 0) : extraRand(ExtraRand){};
+	uint32_t genRand(
+		const int32_t &extra = 4, 
+		bool resetExtraRand = true, 
+		int32_t resetERextraIt = 2
+	) {
+		if (resetExtraRand)
+		  extraRand = genRand(resetERextraIt, false);
+		// set random to unix time
+		auto cool = std::chrono::system_clock::now();
+		auto very =
+		    (unsigned int)
+			std::chrono::time_point_cast<std::chrono::milliseconds>
+			(cool).time_since_epoch().count();
+		// add random()
+		if (extra >= 1)
+			very -= rand();
+		// add line number
+		if (extra >= 2)
+			very += __LINE__;
+		// add an iteration (extra = 2)
+		if (extra >= 3)
+			very += genRand(2, false);
+		// bitshift right or left based on another iteration
+		if (extra >= 4)
+			(genRand(2, false)) % 2 ? very >>= 1 : very <<= 1;
+		// subtract an iteration (extra = 4)		
+		return (very + extraRand);
+	}
+};
 
 #endif
