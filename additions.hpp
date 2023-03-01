@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <SDL.h>
+#include <thread>
 #include "render.hpp"
 
 static SDL_Window*   N_WINDOW;
@@ -36,13 +37,8 @@ void resetNodes(BetterRand& rand)
 			(rand.genRand() % N_SCREENHEIGHT),
 			i,
 			false,
-			{
-				155,155,155
-				//(uint8_t)(rand.genRand() % 70),
-				//(uint8_t)(rand.genRand() % 70),
-				//(uint8_t)(rand.genRand() % 70)
-			},
-			5
+			{155,155,155},
+			10
 		};
 		N_NODES.push_back(temp);
 	}
@@ -52,12 +48,10 @@ void calcNodes()
 {
 	nodeConnections = {
 		IMP_shortestPath(N_NODES),
-		IMP_shortestPath(N_NODES,2),
 		IMP_shortestPath(N_NODES,3),
-		IMP_shortestPath(N_NODES,8),
-		IMP_shortestPath(N_NODES,20),
-		IMP_shortestPath(N_NODES,50),
-		
+		IMP_shortestPath(N_NODES,6),
+		IMP_shortestPath(N_NODES,10),
+		IMP_shortestPath(N_NODES,100),
 	};
 
 	// find the shortest node path

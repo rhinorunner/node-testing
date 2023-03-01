@@ -35,17 +35,17 @@ std::vector<uint16_t> IMP_shortestPath(
 			if ((nodes[i].id == nextNode.id) || nodes[i].check) continue;
 				
 			// check if the node is closer than the next node
-			float dist = distance({nextNode.X, nextNode.Y},{nodes[i].X, nodes[i].Y});
+			double dist = distance({nextNode.X, nextNode.Y},{nodes[i].X, nodes[i].Y});
 			if (variation) {
 				if (dist+(rand()%variation) < closestNodeDistance+(rand()%variation)) {
 					closestNode = nodes[i].id;
-					closestNodeDistance = dist;
+					closestNodeDistance = (uint16_t)dist;
 				}
 			}
 			else {
 				if (dist < closestNodeDistance) {
 					closestNode = nodes[i].id;
-					closestNodeDistance = dist;
+					closestNodeDistance = (uint16_t)dist;
 				}
 			}
 		}
@@ -56,20 +56,77 @@ std::vector<uint16_t> IMP_shortestPath(
 	}
 }
 
+// returns a variable amount of nodes that are closest to the genesis node
+std::vector<Node> closestNodes(
+	const std::vector<Node>& nodes,
+	const Node& genesisNode,
+	const uint16_t& nodeAmount,
+	const std::vector<Node>& illegal = {}
+) {
+	// holds [nodeAmount] of the closest nodes
+	std::vector<Node> toReturn {};
+	// closest nodes
+	// fill it with the first [nodeAmount] nodes just so the logic works
+	std::vector<std::pair<Node,float>> closestNodes {};
+	for (uint16_t m = 0; m < nodeAmount; ++m) {
+		closestNodes.push_back({
+			nodes[m],
+			distance({genesisNode.X,genesisNode.Y},{nodes[m].X,nodes[m].Y})
+		});
+	}
+	if (N_NODEAMOUNT <= 1) return toReturn;
+	// loop through all nodes
+	for (auto& i : nodes) {
+		// dont compare to anything in illegal
+		for (auto& x : illegal) if (x.id == i.id) continue;
+		// also dont compare to yourself idiot
+		if (i.id == genesisNode.id) continue;
+		
+		// distance from genesis node to current node
+		double dist = distance({genesisNode.X,genesisNode.Y},{i.X,i.Y});
+		// check if the node is shorter than everything in toReturn
+		for (auto& n : closestNodes) {
+			if (dist > n.second) {
+				// replace the smallest node in closestNodes with the new node
+				uint16_t smallestInd;
+				uint16_t smallestVal = UINT16_MAX;
+				for (uint16_t m = 0; m < closestNodes.size(); ++m) {
+					if (closestNodes[m].second < smallestVal) {
+						smallestVal = closestNodes[m].second;
+						smallestInd = m;
+					}
+				}
+				closestNodes[smallestInd] = {i,dist};
+			}
+		}
+	}
+	return toReturn;
+}
+
+// iterates through [N1] possible paths with a length of 3
+// then chooses the shortest one and adds it to the main path
+std::vector<uint16_t> IMP_smallIterPath(
+	std::vector<Node> nodes,
+	const uint16_t& N1 = 3
+) {
+	
+}
+
 // returns the index of a node with a specific ID
 uint16_t findId(const uint16_t& id) {
-	for (uint16_t i = 0; i < N_NODES.size(); ++i) {
+	for (uint16_t i = 0; i < N_NODES.size(); ++i) 
 		if (N_NODES[i].id == id) 
 			return i;
-	}
 	// shit, its not in the node list
 	// what now
+	// pray to god it never gets to this
+	return UINT16_MAX;
 }
 
 // finds the total distance of a node path
-float nodeDistanceTotal(std::vector<uint16_t> path) 
+double nodeDistanceTotal(std::vector<uint16_t> path) 
 {
-	float totalDistance = 0;
+	double totalDistance = 0;
 	for (uint16_t i = 0; i < path.size(); ++i) 
 	{
 		// make sure its not the last node

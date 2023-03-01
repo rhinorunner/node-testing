@@ -35,7 +35,7 @@ struct Node {
 /*********************************************/
 
 // screen width
-static constexpr uint16_t N_SCREENWIDTH = 900;
+static constexpr uint16_t N_SCREENWIDTH = 1400;
 // screen height
 static constexpr uint16_t N_SCREENHEIGHT = 900;
 
@@ -44,7 +44,7 @@ static uint16_t N_NODEAMOUNT = 100;
 // how much to increase/decrease nodes by
 static constexpr uint16_t N_NODESTEP = 10;
 // node line delay, in ms
-static uint16_t N_NODEDELAY = 2;
+static uint16_t N_NODEDELAY = 0;
 // node delay increase/decrease step
 static uint16_t N_NODEDELAYSTEP = 2;
 
@@ -59,7 +59,7 @@ static std::vector<std::vector<uint16_t>> nodeConnections {};
 
 /*********************************************/
 
-float distance(
+double distance(
 	const std::pair<uint16_t,uint16_t>& coords1,
 	const std::pair<uint16_t,uint16_t>& coords2
 ) {

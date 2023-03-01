@@ -8,8 +8,6 @@
 #include "implementations.hpp"
 #include "additions.hpp"
 
-
-
 int main()
 {
 	N_SDLSETUP();
@@ -33,12 +31,10 @@ int main()
 		timeNew = clock();
 		deltaTime = timeNew - timeOld;
 
-
 		SDL_PollEvent(&event);
 
 		if (event.type == SDL_QUIT) looping = false;
 		else if (event.type == SDL_MOUSEMOTION) {
-		SDL_MOUSEMOTION:
 			mouseX = event.motion.x;
 			mouseY = event.motion.y;
 		}
@@ -47,10 +43,10 @@ int main()
 			Node temp {
 				mouseX,
 				mouseY,
-				N_NODES.size(),
+				(uint16_t)N_NODES.size(),
 				false,
 				{155,155,155},
-				5
+				10
 			};
 			N_NODES.push_back(temp);
 			N_NODEAMOUNT++;
