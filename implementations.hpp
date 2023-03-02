@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
-#include "render_.hpp"
+#include "render.hpp"
 
 // returns a variable amount of nodes that are closest to the genesis node
 std::vector<Node> closestNodes(
