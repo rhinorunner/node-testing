@@ -3,7 +3,100 @@
 
 #include <iostream>
 #include <vector>
+#include <array>
 #include "render.hpp"
+
+// returns a variable amount of nodes that are closest to the genesis node
+std::vector<Node> closestNodes(
+	const std::vector<Node>& nodes,
+	const Node& genesisNode,
+	const uint16_t& nodeAmount,
+	const std::vector<Node>& illegal = {}
+) {
+	// holds [nodeAmount] of the closest nodes
+	std::vector<Node> toReturn {};
+	// closest nodes
+	// fill it with the first [nodeAmount] nodes just so the logic works
+	std::vector<std::pair<Node,float>> closestNodes {};
+	bool still = false;
+	for (uint16_t m = 0; m < nodeAmount; ++m) {
+		if (nodes[m].id == genesisNode.id) {
+			still = true;
+			continue;
+		}
+		closestNodes.push_back({
+			nodes[m],
+			distance({genesisNode.X,genesisNode.Y},{nodes[m].X,nodes[m].Y})
+		});
+	}
+	if (still) {
+		closestNodes.push_back({
+			nodes[nodeAmount],
+			distance(
+				{genesisNode.X,genesisNode.Y},
+				{nodes[nodeAmount].X,nodes[nodeAmount].Y}
+			)
+		});
+	}
+	if (N_NODEAMOUNT <= 1) return toReturn;
+	// loop through all nodes
+	for (auto& i : nodes) {
+		// dont compare to anything in illegal
+		bool kill = false;
+		for (auto& x : illegal) if (x.id == i.id) kill = true;
+		if (kill) continue;
+		// also dont compare to yourself idiot
+		if (i.id == genesisNode.id) continue;
+		
+		// distance from genesis node to current node
+		double dist = distance({genesisNode.X,genesisNode.Y},{i.X,i.Y});
+		// check if the node is shorter than everything in toReturn
+		for (auto& n : closestNodes) {
+			if (dist < n.second) {
+				// replace the largest node in closestNodes with the new node
+				uint16_t largestInd = 0;
+				uint16_t largestVal = 0;
+				for (uint16_t m = 0; m < closestNodes.size(); ++m) {
+					if (closestNodes[m].second > largestVal) {
+						largestVal = closestNodes[m].second;
+						largestInd = m;
+					}
+				}
+				closestNodes[largestInd] = {i,dist};
+				break;
+			}
+		}
+	}
+	for (auto& b : closestNodes) toReturn.push_back(b.first);
+	return toReturn;
+}
+
+// returns the index of a node with a specific ID
+inline uint16_t findId(const uint16_t& id) {
+	for (uint16_t i = 0; i < N_NODES.size(); ++i) 
+		if (N_NODES[i].id == id) 
+			return i;
+	// shit, its not in the node list
+	// what now
+	// pray to god it never gets to this
+	return UINT16_MAX;
+}
+
+// finds the total distance of a node path
+double nodeDistanceTotal(std::vector<uint16_t> path) 
+{
+	double totalDistance = 0;
+	for (uint16_t i = 0; i < path.size(); ++i) 
+	{
+		// make sure its not the last node
+		if (i == path.size()-1) break;
+		totalDistance += distance(
+			{N_NODES[findId(path[i  ])].X, N_NODES[findId(path[i  ])].Y},
+			{N_NODES[findId(path[i+1])].X, N_NODES[findId(path[i+1])].Y}
+		);
+	}
+	return totalDistance;
+}
 
 // connects each node with the closest node
 std::vector<uint16_t> IMP_shortestPath(
@@ -56,106 +149,78 @@ std::vector<uint16_t> IMP_shortestPath(
 	}
 }
 
-// returns a variable amount of nodes that are closest to the genesis node
-std::vector<Node> closestNodes(
-	const std::vector<Node>& nodes,
-	const Node& genesisNode,
-	const uint16_t& nodeAmount,
-	const std::vector<Node>& illegal = {}
-) {
-	// holds [nodeAmount] of the closest nodes
-	std::vector<Node> toReturn {};
-	// closest nodes
-	// fill it with the first [nodeAmount] nodes just so the logic works
-	std::vector<std::pair<Node,float>> closestNodes {};
-	bool still = false;
-	for (uint16_t m = 0; m < nodeAmount; ++m) {
-		if (nodes[m].id == genesisNode.id) {
-			still = true;
-			continue;
-		}
-		closestNodes.push_back({
-			nodes[m],
-			distance({genesisNode.X,genesisNode.Y},{nodes[m].X,nodes[m].Y})
-		});
-	}
-	if (still) {
-		closestNodes.push_back({
-			nodes[nodeAmount],
-			distance(
-				{genesisNode.X,genesisNode.Y},
-				{nodes[nodeAmount].X,nodes[nodeAmount].Y}
-			)
-		});
-	}
-	if (N_NODEAMOUNT <= 1) return toReturn;
-	// loop through all nodes
-	for (auto& i : nodes) {
-		// dont compare to anything in illegal
-		for (auto& x : illegal) if (x.id == i.id) continue;
-		// also dont compare to yourself idiot
-		if (i.id == genesisNode.id) continue;
-		
-		// distance from genesis node to current node
-		double dist = distance({genesisNode.X,genesisNode.Y},{i.X,i.Y});
-		std::cout << "node " << i.id << ", dist " << dist << '\n';
-		// check if the node is shorter than everything in toReturn
-		for (auto& n : closestNodes) {
-			if (dist < n.second) {
-				std::cout << "\tsuccess! smaller than " << n.second << '\n';
-				// replace the largest node in closestNodes with the new node
-				uint16_t largestInd = 0;
-				uint16_t largestVal = 0;
-				for (uint16_t m = 0; m < closestNodes.size(); ++m) {
-					if (closestNodes[m].second > largestVal) {
-						largestVal = closestNodes[m].second;
-						largestInd = m;
-					}
-				}
-				std::cout << "\tlargest path was " << largestVal << '\n';
-				closestNodes[largestInd] = {i,dist};
-				break;
-			}
-		}
-	}
-	for (auto& b : closestNodes) toReturn.push_back(b.first);
-	return toReturn;
-}
-
-// iterates through [N1] possible paths with a length of 3
+// iterate through [N1] possible paths
+// then through [N2] possible subpaths
+// then through [N3] possible sub-subpaths
 // then chooses the shortest one and adds it to the main path
 std::vector<uint16_t> IMP_smallIterPath(
 	std::vector<Node> nodes,
-	const uint16_t& N1 = 3
+	const uint16_t& N1 = 3,
+	const uint16_t& N2 = 3,
+	const uint16_t& N3 = 3
 ) {
-	
-}
-
-// returns the index of a node with a specific ID
-uint16_t findId(const uint16_t& id) {
-	for (uint16_t i = 0; i < N_NODES.size(); ++i) 
-		if (N_NODES[i].id == id) 
-			return i;
-	// shit, its not in the node list
-	// what now
-	// pray to god it never gets to this
-	return UINT16_MAX;
-}
-
-// finds the total distance of a node path
-double nodeDistanceTotal(std::vector<uint16_t> path) 
-{
-	double totalDistance = 0;
-	for (uint16_t i = 0; i < path.size(); ++i) 
-	{
-		// make sure its not the last node
-		if (i == path.size()-1) break;
-		totalDistance += distance(
-			{N_NODES[findId(path[i  ])].X, N_NODES[findId(path[i  ])].Y},
-			{N_NODES[findId(path[i+1])].X, N_NODES[findId(path[i+1])].Y}
-		);
+	std::vector<uint16_t> toReturn {};
+	if (N_NODEAMOUNT <= 1) return toReturn;
+	// holds the current genesis node
+	Node genesisNode = nodes[0];
+	// holds the nodes that are already in the path
+	std::vector<Node> illegals {};
+	while (1) {
+		// not enough nodes? fall back onto IMP_shortestPath
+		if ((N_NODES.size() - illegals.size()) < N1*N2) {
+			std::cout << "not enough nodes! using IMP_shortestPath\n";
+			for (auto& e : IMP_shortestPath(nodes)) toReturn.push_back(e);
+			return toReturn;
+		}
+		
+		// fill the array with the closest nodes
+		std::vector<Node> cnodes_1 = closestNodes(nodes,genesisNode,N1,illegals);
+		std::cout << "closest nodes: ";
+		for (auto& e : cnodes_1) std::cout << e.id << " ";
+		std::cout << '\n';
+		std::vector<Node> cnodes_2;
+		// get subpaths for each node
+		for (uint16_t x = 0; x < N1; ++x) {
+			std::vector<Node> tempIllegal = illegals;
+			tempIllegal.push_back(genesisNode);
+			// fill the array with the closest nodes
+			cnodes_2 = closestNodes(nodes,cnodes_1[x],N2,tempIllegal);
+			std::cout << "\tclosest nodes for " << cnodes_1[x].id << ": ";
+			for (auto& q : cnodes_2) std::cout << q.id << " ";
+			std::cout << '\n';
+		}
+		// get all the paths
+		std::vector<std::vector<uint16_t>> paths {};
+		for (uint16_t p1 = 0; p1 < N1; ++p1) {
+			for (uint16_t p2 = 0; p2 < N2; ++p2) {
+				paths.push_back({
+					genesisNode.id,
+					cnodes_1[p1].id,
+					cnodes_2[p2].id
+				});
+			}
+		}
+		// find the shortest path
+		uint16_t shortIndex = 0;
+		float shortVal = (float)UINT16_MAX;
+		for (uint16_t i = 0; i < paths.size(); ++i) {
+			float temp = nodeDistanceTotal(paths[i]);
+			if (temp < shortVal) {
+				shortVal = temp;
+				shortIndex = i;
+			}
+		}
+		std::cout << "shortest path is " << shortIndex << " with a value of " << shortVal << '\n';
+		// add the shortest path to toReturn
+		// also put them il illegals
+		for (uint16_t i = 0; i < paths[shortIndex].size(); ++i) {
+			toReturn.push_back(paths[shortIndex][i]);
+			illegals.push_back(nodes[findId(toReturn[i])]);
+		}
+		// set genesis node as last node of path
+		genesisNode = nodes[findId(toReturn[toReturn.size()-1])];
 	}
-	return totalDistance;
+	return toReturn;
 }
 
 #endif

@@ -48,10 +48,7 @@ void calcNodes()
 {
 	nodeConnections = {
 		IMP_shortestPath(N_NODES),
-		IMP_shortestPath(N_NODES,3),
-		IMP_shortestPath(N_NODES,6),
-		IMP_shortestPath(N_NODES,10),
-		IMP_shortestPath(N_NODES,100),
+		IMP_smallIterPath(N_NODES)
 	};
 
 	// find the shortest node path

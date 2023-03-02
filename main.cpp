@@ -24,7 +24,7 @@ int main()
 	N_RENDER Renderer {N_WINDOW, N_RENDERER};
 
 	resetNodes(rand);
-	//calcNodes();
+	calcNodes();
 
 	while (looping)
 	{
@@ -127,16 +127,7 @@ int main()
 			}
 		}
 		
-		N_NODES[0].color = {0,255,0};
-
-		auto thing = closestNodes(N_NODES,N_NODES[0],10);
-		for (uint16_t l = 0; l < thing.size(); ++l) {
-			uint16_t index = findId(thing[l].id);
-			N_NODES[index].color = {255,0,0};
-			float dist = distance({N_NODES[0].X,N_NODES[0].Y},{N_NODES[index].X,N_NODES[index].Y});
-			std::cout << "index: " << index << ", dist: " << dist << '\n';
-		}
-
+		// render nodes
 		for (auto i : N_NODES) {
 			Renderer.blitCircle(
 				i.X,
@@ -144,9 +135,7 @@ int main()
 				{i.color.R, i.color.G, i.color.B}
 			);
 		}
-		SDL_RenderPresent(N_RENDERER);
-		while (1);
-		
+
 		// render lines connecting the nodes
 		uint16_t tempC = 0;
 		for (uint16_t B = 0; B < nodeConnections.size(); ++B) 
