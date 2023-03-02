@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
-#include "render.hpp"
+#include "render_.hpp"
 
 // returns a variable amount of nodes that are closest to the genesis node
 std::vector<Node> closestNodes(
@@ -159,47 +159,58 @@ std::vector<uint16_t> IMP_smallIterPath(
 	const uint16_t& N2 = 3,
 	const uint16_t& N3 = 3
 ) {
-	std::vector<uint16_t> toReturn {};
-	if (N_NODEAMOUNT <= 1) return toReturn;
 	// holds the current genesis node
 	Node genesisNode = nodes[0];
+
+	std::vector<uint16_t> toReturn {genesisNode.id};
+	if (N_NODEAMOUNT <= 1) return toReturn;
 	// holds the nodes that are already in the path
-	std::vector<Node> illegals {};
+	std::vector<Node> illegals {genesisNode};
 	while (1) {
+		std::cout << "\nILLEGALS: ";
+		for (auto& il : illegals) std::cout << il.id << ' ';
+		std::cout << '\n';
+
 		// not enough nodes? fall back onto IMP_shortestPath
 		if ((N_NODES.size() - illegals.size()) < N1*N2) {
+
 			std::cout << "not enough nodes! using IMP_shortestPath\n";
+
 			for (auto& e : IMP_shortestPath(nodes)) toReturn.push_back(e);
 			return toReturn;
 		}
-		
+		// holds the attempted paths
+		std::vector<std::vector<uint16_t>> paths {};
+
 		// fill the array with the closest nodes
 		std::vector<Node> cnodes_1 = closestNodes(nodes,genesisNode,N1,illegals);
+
 		std::cout << "closest nodes: ";
 		for (auto& e : cnodes_1) std::cout << e.id << " ";
 		std::cout << '\n';
+
 		std::vector<Node> cnodes_2;
 		// get subpaths for each node
 		for (uint16_t x = 0; x < N1; ++x) {
 			std::vector<Node> tempIllegal = illegals;
-			tempIllegal.push_back(genesisNode);
 			// fill the array with the closest nodes
 			cnodes_2 = closestNodes(nodes,cnodes_1[x],N2,tempIllegal);
+
 			std::cout << "\tclosest nodes for " << cnodes_1[x].id << ": ";
 			for (auto& q : cnodes_2) std::cout << q.id << " ";
 			std::cout << '\n';
-		}
-		// get all the paths
-		std::vector<std::vector<uint16_t>> paths {};
-		for (uint16_t p1 = 0; p1 < N1; ++p1) {
+
+			// fill possible paths with [N1] + each [N2] subpath
 			for (uint16_t p2 = 0; p2 < N2; ++p2) {
 				paths.push_back({
 					genesisNode.id,
-					cnodes_1[p1].id,
+					cnodes_1[x].id,
 					cnodes_2[p2].id
 				});
 			}
+
 		}
+
 		// find the shortest path
 		uint16_t shortIndex = 0;
 		float shortVal = (float)UINT16_MAX;
@@ -211,12 +222,19 @@ std::vector<uint16_t> IMP_smallIterPath(
 			}
 		}
 		std::cout << "shortest path is " << shortIndex << " with a value of " << shortVal << '\n';
+
 		// add the shortest path to toReturn
 		// also put them il illegals
-		for (uint16_t i = 0; i < paths[shortIndex].size(); ++i) {
+		for (uint16_t i = 1; i < paths[shortIndex].size(); ++i) {
+			Node node = nodes[findId(paths[shortIndex][i])];
+
+			std::cout << "\tid: " << node.id << '\n';
+
 			toReturn.push_back(paths[shortIndex][i]);
-			illegals.push_back(nodes[findId(toReturn[i])]);
+			illegals.push_back(node);
 		}
+		std::cout << '\n';
+
 		// set genesis node as last node of path
 		genesisNode = nodes[findId(toReturn[toReturn.size()-1])];
 	}
