@@ -10,7 +10,8 @@
 static SDL_Window*   N_WINDOW;
 static SDL_Renderer* N_RENDERER;
 
-void N_SDLSETUP() {// the window
+// window setup
+void N_SDLSETUP() { 
 	N_WINDOW = NULL;
 	// renderer
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -28,35 +29,40 @@ void N_SDLSETUP() {// the window
 	SDL_RenderClear(N_RENDERER);
 }
 
-void resetNodes(BetterRand& rand) 
-{
+void resetNodes() {
 	N_NODES = {};
 	for (uint16_t i = 0; i < N_NODEAMOUNT; ++i) {
 		Node temp {
-			(rand.genRand() % N_SCREENWIDTH),
-			(rand.genRand() % N_SCREENHEIGHT),
+			(rand() % N_SCREENWIDTH),
+			(rand() % N_SCREENHEIGHT),
 			i,
+			10,
 			false,
-			{155,155,155},
-			10
+			{155,155,155}
 		};
 		N_NODES.push_back(temp);
 	}
 }
 
-void calcNodes() 
-{
+void calcNodes() {
+	bool first = false;
+	
 	nodeConnections = {
 		IMP_shortestPath(N_NODES),
-		IMP_smallIterPath(N_NODES)
+		IMP_shortestPath_branched(N_NODES,3,3,0,0)
 	};
 
+	if (nodeShow.empty()) {
+		first = true;
+		for (auto i : nodeConnections) nodeShow.push_back(true);
+	}
+
 	// find the shortest node path
-	float shortestPath = UINT16_MAX;
+	float shortestPath = FLT_MAX;
 	uint16_t shortestPathName = 0;
 	
 	for (uint16_t ll = 0; ll < nodeConnections.size(); ++ll) {
-		if (nodeDistanceTotal(nodeConnections[ll]) < shortestPath) {
+		if ((nodeDistanceTotal(nodeConnections[ll]) < shortestPath) && nodeShow[ll]) {
 			shortestPath = nodeDistanceTotal(nodeConnections[ll]);
 			shortestPathName = ll;
 		}
@@ -65,6 +71,7 @@ void calcNodes()
 	std::cout << "\n[" << N_NODES.size() << " nodes]\n";
 	for (uint16_t im = 0; im < nodeConnections.size(); ++im) {
 		std::cout 
+			<< (nodeShow[im] ? "[shown]  " : "[hidden] ")
 			<< "Path " 
 			<< im << ": " 
 			<< nodeDistanceTotal(nodeConnections[im])

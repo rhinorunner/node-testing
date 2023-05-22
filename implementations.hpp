@@ -10,7 +10,7 @@
 std::vector<Node> closestNodes(
 	const std::vector<Node>& nodes,
 	const Node& genesisNode,
-	const uint16_t& nodeAmount,
+	uint16_t nodeAmount,
 	const std::vector<Node>& illegal = {}
 ) {
 	// holds [nodeAmount] of the closest nodes
@@ -101,7 +101,7 @@ double nodeDistanceTotal(std::vector<uint16_t> path)
 // connects each node with the closest node
 std::vector<uint16_t> IMP_shortestPath(
 	std::vector<Node> nodes,
-	const uint16_t& variation = 0
+	uint16_t variation = 0
 ) {
 	std::vector<uint16_t> toReturn {};
 	if (N_NODEAMOUNT <= 1) return toReturn;
@@ -149,96 +149,45 @@ std::vector<uint16_t> IMP_shortestPath(
 	}
 }
 
-// iterate through [N1] possible paths
-// then through [N2] possible subpaths
-// then through [N3] possible sub-subpaths
-// then chooses the shortest one and adds it to the main path
-std::vector<uint16_t> IMP_smallIterPath(
+
+// makes small shortest paths and puts them all together
+std::vector<uint16_t> IMP_shortestPath_branched(
 	std::vector<Node> nodes,
-	const uint16_t& N1 = 3,
-	const uint16_t& N2 = 3,
-	const uint16_t& N3 = 3
+	uint16_t branchAmount = 3,
+	uint16_t branchLength = 3,
+	uint16_t V1 = 0,
+	uint16_t V2 = 0
 ) {
-	// holds the current genesis node
-	Node genesisNode = nodes[0];
-
-	std::vector<uint16_t> toReturn {genesisNode.id};
+	std::vector<uint16_t> toReturn {};
+	
 	if (N_NODEAMOUNT <= 1) return toReturn;
-	// holds the nodes that are already in the path
-	std::vector<Node> illegals {genesisNode};
+	if ((branchAmount <= 1) || (branchAmount <= nodes.size())) return IMP_shortestPath(nodes,V1);
+	
+	std::vector<Node> illegal {};
+	Node currentNode = nodes[0];
+
 	while (1) {
-		std::cout << "\nILLEGALS: ";
-		for (auto& il : illegals) std::cout << il.id << ' ';
-		std::cout << '\n';
-
-		// not enough nodes? fall back onto IMP_shortestPath
-		if ((N_NODES.size() - illegals.size()) < N1*N2) {
-
-			std::cout << "not enough nodes! using IMP_shortestPath\n";
-
-			for (auto& e : IMP_shortestPath(nodes)) toReturn.push_back(e);
+		// if there arent enough nodes to branch
+		if (branchAmount < (nodes.size()-illegal.size())) {
+			// create a vector full of the remaining nodes, with the current node in the front
+			std::vector<Node> remainingNodes {currentNode};
+			std::sort(nodes.begin(),nodes.end());
+			std::sort(illegal.begin(),illegal.end());
+			std::set_difference(
+				nodes.begin(),nodes.end(),
+				illegal.begin(),illegal.end(),
+				std::back_inserter(remainingNodes)
+			);
+			// connect the remaining nodes
+			std::vector<uint16_t> path = IMP_shortestPath(remainingNodes,V1);
+			// add the path to the return vector
+			for (auto& p : path) toReturn.push_back(p);
+			
 			return toReturn;
 		}
-		// holds the attempted paths
-		std::vector<std::vector<uint16_t>> paths {};
-
-		// fill the array with the closest nodes
-		std::vector<Node> cnodes_1 = closestNodes(nodes,genesisNode,N1,illegals);
-
-		std::cout << "closest nodes: ";
-		for (auto& e : cnodes_1) std::cout << e.id << " ";
-		std::cout << '\n';
-
-		std::vector<Node> cnodes_2;
-		// get subpaths for each node
-		for (uint16_t x = 0; x < N1; ++x) {
-			std::vector<Node> tempIllegal = illegals;
-			// fill the array with the closest nodes
-			cnodes_2 = closestNodes(nodes,cnodes_1[x],N2,tempIllegal);
-
-			std::cout << "\tclosest nodes for " << cnodes_1[x].id << ": ";
-			for (auto& q : cnodes_2) std::cout << q.id << " ";
-			std::cout << '\n';
-
-			// fill possible paths with [N1] + each [N2] subpath
-			for (uint16_t p2 = 0; p2 < N2; ++p2) {
-				paths.push_back({
-					genesisNode.id,
-					cnodes_1[x].id,
-					cnodes_2[p2].id
-				});
-			}
-
-		}
-
-		// find the shortest path
-		uint16_t shortIndex = 0;
-		float shortVal = (float)UINT16_MAX;
-		for (uint16_t i = 0; i < paths.size(); ++i) {
-			float temp = nodeDistanceTotal(paths[i]);
-			if (temp < shortVal) {
-				shortVal = temp;
-				shortIndex = i;
-			}
-		}
-		std::cout << "shortest path is " << shortIndex << " with a value of " << shortVal << '\n';
-
-		// add the shortest path to toReturn
-		// also put them il illegals
-		for (uint16_t i = 1; i < paths[shortIndex].size(); ++i) {
-			Node node = nodes[findId(paths[shortIndex][i])];
-
-			std::cout << "\tid: " << node.id << '\n';
-
-			toReturn.push_back(paths[shortIndex][i]);
-			illegals.push_back(node);
-		}
-		std::cout << '\n';
-
-		// set genesis node as last node of path
-		genesisNode = nodes[findId(toReturn[toReturn.size()-1])];
+		// find branchAmount closest nodes
+		std::vector<Node> cnodes = closestNodes(nodes,currentNode,branchAmount,illegal);
 	}
-	return toReturn;
 }
 
 #endif

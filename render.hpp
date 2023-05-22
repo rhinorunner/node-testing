@@ -8,7 +8,7 @@
 #include <SDL.h>
 #undef main
 
-#pragma pack(1)
+//#pragma pack(1)
 
 struct RGB_t {
 	uint8_t R;
@@ -27,9 +27,9 @@ struct Node {
 	uint16_t X;
 	uint16_t Y;
 	uint16_t id;
+	uint16_t radius = 10;
 	bool check;
 	RGB_t color = {255,255,255};
-	uint16_t radius = 10;
 };
 
 /*********************************************/
@@ -57,6 +57,9 @@ static std::vector<Node> N_NODES {};
 // holds the node connection arrays, in order of connections
 static std::vector<std::vector<uint16_t>> nodeConnections {};
 
+// should each path be shown
+static std::vector<bool> nodeShow {};
+
 /*********************************************/
 
 double distance(
@@ -80,8 +83,8 @@ public:
 
 	// blit a pixel
 	void blitPixel(
-		const uint16_t& X,
-		const uint16_t& Y, 
+		uint16_t X,
+		uint16_t Y, 
 		const RGB_t& color
 	) {
 		SDL_SetRenderDrawColor(Renderer, color.R, color.G, color.B, 255);
@@ -115,9 +118,9 @@ public:
 
 	// blit a circle (no fill)
 	void blitCircle(
-		const uint16_t& centerX, 
-		const uint16_t& centerY, 
-		const uint16_t& radius,
+		uint16_t centerX, 
+		uint16_t centerY, 
+		uint16_t radius,
 		const RGB_t& color
 	)
 	{
@@ -159,9 +162,9 @@ public:
 	// blit a circle (filled)
 	// kind of shit, dont use this
 	void blitCircleFull(
-		const uint16_t& centerX,
-		const uint16_t& centerY,
-		const uint16_t& radius,
+		uint16_t centerX,
+		uint16_t centerY,
+		uint16_t radius,
 		const RGB_t& color
 	) {
 		for (uint16_t i = 0; i < radius; i++) {
@@ -172,57 +175,28 @@ public:
 
 namespace Colors 
 {
-	RGB_t white  = {255,255,255};
-	RGB_t black  = {0  ,0  ,0  };
-	RGB_t red    = {255,0  ,0  };
-	RGB_t green  = {0  ,255,0  };
-	RGB_t blue   = {0  ,0  ,255};
-	RGB_t yellow = {255,255,0  };
-	RGB_t purple = {255,0  ,255};
-	RGB_t cyan   = {0  ,255,255};
+	RGB_t white   = {255,255,255};
+	RGB_t black   = {0  ,0  ,0  };
+	RGB_t red     = {255,0  ,0  };
+	RGB_t orange  = {255,155,0  };
+	RGB_t yellow  = {255,255,0  };
+	RGB_t yelgrn  = {155,255,0  };
+	RGB_t green   = {0  ,255,0  };
+	RGB_t blugrn  = {0  ,255,155};
+	RGB_t blue    = {0  ,0  ,255};
+	RGB_t cyan    = {0  ,255,255};
+	RGB_t magenta = {255,0  ,255};
+	RGB_t purple  = {155,0  ,255};
 
-	std::array<RGB_t,8> allColors = {
-		white,black,red,green,blue,yellow,purple,cyan
+	std::vector<RGB_t> allColors = {
+		white,black,red,green,blue,yellow,magenta,cyan,orange,
+		yelgrn,blugrn,purple
 	};
 
-	std::array<RGB_t,8> list = {
-		white,red,green,blue,yellow,purple,cyan
+	std::vector<RGB_t> list = {
+		white,red,green,blue,yellow,magenta,cyan,orange,
+		yelgrn,blugrn,purple
 	};
-};
-
-class BetterRand {
-public:
-	// adds this to random each time, optional
-	int32_t extraRand;
-	BetterRand(const int32_t &ExtraRand = 0) : extraRand(ExtraRand){};
-	uint32_t genRand(
-		const int32_t &extra = 4, 
-		bool resetExtraRand = true, 
-		int32_t resetERextraIt = 2
-	) {
-		if (resetExtraRand)
-		  extraRand = genRand(resetERextraIt, false);
-		// set random to unix time
-		auto cool = std::chrono::system_clock::now();
-		auto very =
-		    (unsigned int)
-			std::chrono::time_point_cast<std::chrono::milliseconds>
-			(cool).time_since_epoch().count();
-		// add random()
-		if (extra >= 1)
-			very -= rand();
-		// add line number
-		if (extra >= 2)
-			very += __LINE__;
-		// add an iteration (extra = 2)
-		if (extra >= 3)
-			very += genRand(2, false);
-		// bitshift right or left based on another iteration
-		if (extra >= 4)
-			(genRand(2, false)) % 2 ? very >>= 1 : very <<= 1;
-		// subtract an iteration (extra = 4)		
-		return (very + extraRand);
-	}
 };
 
 #endif
